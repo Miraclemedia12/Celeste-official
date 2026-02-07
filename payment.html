@@ -144,15 +144,17 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+    // UPDATED CONFIG
     const firebaseConfig = {
-        apiKey: "AIzaSyASDlQQMoXCeMZKs5O3KmO8zuFztt8rg2E",
-        authDomain: "celeste-web1.firebaseapp.com",
-        projectId: "celeste-web1",
-        storageBucket: "celeste-web1.firebasestorage.app",
-        messagingSenderId: "905722043319",
-        appId: "1:905722043319:web:83d032bf3608b8957b2632"
+        apiKey: "AIzaSyBnYhUrJq0ZQNn4wlQ80Ug9oYXDX71rNsE",
+        authDomain: "celeste-official.firebaseapp.com",
+        projectId: "celeste-official",
+        storageBucket: "celeste-official.firebasestorage.app",
+        messagingSenderId: "955219718575",
+        appId: "1:955219718575:web:0aa8d59d18f23d8dcdbf5a",
+        measurementId: "G-7VKF6NVWCD"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -165,39 +167,63 @@
         "cameroon": { name: "Cameroon", bank: "MTN MOMO", number: "680545817", holder: "CHANCELINE NWANA", lite: "8,000 XAF", max: "14,000 XAF" },
     };
 
-    let vendorLink = "https://t.me/Gifted34";
+    let vendorLink = "https://t.me/Celesteoffical";
     let whatsappNum = "2349068854115";
 
-    function setupUI() {
+    async function initPage() {
         const selected = localStorage.getItem('selectedCountry') || 'nigeria';
-        const data = countryData[selected];
-        if (data) {
-            document.getElementById('country-name-label').innerText = data.name;
-            document.getElementById('bank-name-display').innerText = data.bank;
-            document.getElementById('db-number').innerText = data.number;
-            document.getElementById('account-name-display').innerText = data.holder;
-            document.getElementById('lite-price').innerText = data.lite;
-            document.getElementById('max-price').innerText = data.max;
+        const defaultData = countryData[selected];
+
+        try {
+            await signInAnonymously(auth);
+            
+            // First, try to get existing data instantly so there is no flicker
+            const docRef = doc(db, "configs", "main");
+            const snap = await getDoc(docRef);
+            
+            updateUIData(snap.exists() ? snap.data() : null, selected, defaultData);
+
+            // Then, listen for live updates from Admin Dashboard
+            onSnapshot(docRef, (update) => {
+                if(update.exists()) {
+                    updateUIData(update.data(), selected, defaultData);
+                }
+            });
+
+        } catch(e) { 
+            console.log("Firebase Error, showing defaults");
+            updateUIData(null, selected, defaultData); 
         }
     }
 
-    async function initPage() {
-        setupUI();
-        try {
-            await signInAnonymously(auth);
-            onSnapshot(doc(db, "configs", "main"), (snap) => {
-                if(snap.exists()) {
-                    const d = snap.data();
-                    vendorLink = d.telegramLink || vendorLink;
-                    const selected = localStorage.getItem('selectedCountry') || 'nigeria';
-                    if(selected === 'nigeria') {
-                        if(d.nigeriaBank) document.getElementById('bank-name-display').innerText = d.nigeriaBank;
-                        if(d.nigeriaNumber) document.getElementById('db-number').innerText = d.nigeriaNumber;
-                        if(d.nigeriaHolder) document.getElementById('account-name-display').innerText = d.nigeriaHolder;
-                    }
-                }
-            });
-        } catch(e) { console.log("Cloud link error"); }
+    function updateUIData(cloudData, selected, defaults) {
+        document.getElementById('country-name-label').innerText = defaults.name;
+        document.getElementById('lite-price').innerText = defaults.lite;
+        document.getElementById('max-price').innerText = defaults.max;
+
+        if (cloudData) {
+            vendorLink = cloudData.telegramLink || vendorLink;
+            whatsappNum = cloudData.whatsappNum || whatsappNum;
+
+            if(selected === 'nigeria') {
+                document.getElementById('bank-name-display').innerText = cloudData.nigeriaBank || defaults.bank;
+                document.getElementById('db-number').innerText = cloudData.nigeriaNumber || defaults.number;
+                document.getElementById('account-name-display').innerText = cloudData.nigeriaHolder || defaults.holder;
+            } else if(selected === 'ghana') {
+                document.getElementById('bank-name-display').innerText = cloudData.ghanaBank || defaults.bank;
+                document.getElementById('db-number').innerText = cloudData.ghanaNumber || defaults.number;
+                document.getElementById('account-name-display').innerText = "MOBILE MONEY RECEIVER";
+            } else if(selected === 'cameroon') {
+                document.getElementById('bank-name-display').innerText = cloudData.cameroonBank || defaults.bank;
+                document.getElementById('db-number').innerText = cloudData.cameroonNumber || defaults.number;
+                document.getElementById('account-name-display').innerText = "MOBILE MONEY RECEIVER";
+            }
+        } else {
+            // No cloud data yet, show defaults
+            document.getElementById('bank-name-display').innerText = defaults.bank;
+            document.getElementById('db-number').innerText = defaults.number;
+            document.getElementById('account-name-display').innerText = defaults.holder;
+        }
     }
 
     window.onload = initPage;
@@ -212,7 +238,6 @@
         setTimeout(() => btn.style.opacity = "1", 200);
     };
 
-    // New Functions for Choice Modal
     window.showSelection = () => {
         document.getElementById('selection-modal').style.display = 'flex';
     };
@@ -229,9 +254,13 @@
         let finalUrl = "";
 
         if(platform === 'whatsapp') {
-            finalUrl = `https://wa.me/${whatsappNum}?text=${msg}`;
+            // Ensure number is cleaned of @ or + symbols
+            const cleanWA = whatsappNum.replace(/\D/g, '');
+            finalUrl = `https://wa.me/${cleanWA}?text=${msg}`;
         } else {
-            finalUrl = `${vendorLink}?text=${msg}`;
+            // Handle telegram username vs full link
+            let tg = vendorLink.startsWith('http') ? vendorLink : `https://t.me/${vendorLink.replace('@', '')}`;
+            finalUrl = `${tg}?text=${msg}`;
         }
 
         setTimeout(() => { window.location.href = finalUrl; }, 3000);
