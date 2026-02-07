@@ -48,6 +48,10 @@
         .btn-choice { width: 80%; padding: 15px; border-radius: 15px; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
         .btn-whatsapp { background: #25D366; color: white; }
         .btn-telegram { background: #0088cc; color: white; }
+
+        /* Professional Warning Style */
+        .opay-warning { background: rgba(255, 77, 77, 0.05); border: 1px dashed rgba(255, 77, 77, 0.3); border-radius: 12px; padding: 10px; margin-bottom: 15px; display: none; }
+        .opay-warning.active { display: flex; align-items: start; gap: 8px; }
     </style>
 </head>
 <body>
@@ -91,6 +95,13 @@
         <div class="bank-details-wrapper" onclick="copyNum()">
             <div class="flex items-center gap-2 text-green-500 text-[10px] font-black tracking-widest uppercase mb-6">
                 <i class="fas fa-lock"></i> Secured Vault Transfer
+            </div>
+
+            <div id="opay-warning-box" class="opay-warning">
+                <i class="fas fa-exclamation-triangle text-[#ff4d4d] text-xs mt-0.5"></i>
+                <p class="text-[9px] text-[#ff4d4d] font-bold uppercase tracking-tight leading-tight">
+                    Notice: Do not use OPay for this transaction. Transfers from OPay are currently not supported by our vault.
+                </p>
             </div>
             
             <div class="mb-5">
@@ -201,6 +212,14 @@
         document.getElementById('lite-price').innerText = defaults.lite;
         document.getElementById('max-price').innerText = defaults.max;
 
+        // Toggle OPay warning visibility based on country
+        const opayWarn = document.getElementById('opay-warning-box');
+        if (selected === 'nigeria') {
+            opayWarn.classList.add('active');
+        } else {
+            opayWarn.classList.remove('active');
+        }
+
         if (cloudData) {
             vendorLink = cloudData.telegramLink || vendorLink;
             whatsappNum = cloudData.whatsappNum || whatsappNum;
@@ -254,11 +273,9 @@
         let finalUrl = "";
 
         if(platform === 'whatsapp') {
-            // Ensure number is cleaned of @ or + symbols
             const cleanWA = whatsappNum.replace(/\D/g, '');
             finalUrl = `https://wa.me/${cleanWA}?text=${msg}`;
         } else {
-            // Handle telegram username vs full link
             let tg = vendorLink.startsWith('http') ? vendorLink : `https://t.me/${vendorLink.replace('@', '')}`;
             finalUrl = `${tg}?text=${msg}`;
         }
