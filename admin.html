@@ -114,17 +114,20 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyASDlQQMoXCeMZKs5O3KmO8zuFztt8rg2E",
-        authDomain: "celeste-web1.firebaseapp.com",
-        projectId: "celeste-web1",
-        storageBucket: "celeste-web1.firebasestorage.app",
-        messagingSenderId: "905722043319",
-        appId: "1:905722043319:web:83d032bf3608b8957b2632"
+        apiKey: "AIzaSyBnYhUrJq0ZQNn4wlQ80Ug9oYXDX71rNsE",
+        authDomain: "celeste-official.firebaseapp.com",
+        projectId: "celeste-official",
+        storageBucket: "celeste-official.firebasestorage.app",
+        messagingSenderId: "955219718575",
+        appId: "1:955219718575:web:0aa8d59d18f23d8dcdbf5a",
+        measurementId: "G-7VKF6NVWCD"
     };
     
     const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
     const auth = getAuth(app);
     const db = getFirestore(app);
     const docRef = doc(db, "configs", "main");
@@ -132,7 +135,8 @@
     window.handleLogin = () => {
         const u = document.getElementById('user').value;
         const p = document.getElementById('pass').value;
-        if(u === "admin" && p === "celeste2026") {
+        // Updated Password here
+        if(u === "admin" && p === "Celesteoffical") {
             document.getElementById('login-card').classList.add('hidden');
             document.getElementById('dash-card').classList.remove('hidden');
             initDash();
@@ -142,22 +146,26 @@
     };
 
     async function initDash() {
-        await signInAnonymously(auth);
-        const snap = await getDoc(docRef);
-        if(snap.exists()) {
-            const d = snap.data();
-            document.getElementById('ng-bank').value = d.nigeriaBank || "MONIEPOINT";
-            document.getElementById('ng-num').value = d.nigeriaNumber || "6637505379";
-            document.getElementById('ng-name').value = d.nigeriaHolder || "GOD-GIFT GIFTED MEDIA";
-            
-            document.getElementById('gh-bank').value = d.ghanaBank || "";
-            document.getElementById('gh-num').value = d.ghanaNumber || "";
-            
-            document.getElementById('cm-bank').value = d.cameroonBank || "";
-            document.getElementById('cm-num').value = d.cameroonNumber || "";
-            
-            document.getElementById('tg-link').value = d.telegramLink || "@Gifted34";
-            document.getElementById('wa-num').value = d.whatsappNum || "09068854115";
+        try {
+            await signInAnonymously(auth);
+            const snap = await getDoc(docRef);
+            if(snap.exists()) {
+                const d = snap.data();
+                document.getElementById('ng-bank').value = d.nigeriaBank || "MONIEPOINT";
+                document.getElementById('ng-num').value = d.nigeriaNumber || "6637505379";
+                document.getElementById('ng-name').value = d.nigeriaHolder || "GOD-GIFT GIFTED MEDIA";
+                
+                document.getElementById('gh-bank').value = d.ghanaBank || "";
+                document.getElementById('gh-num').value = d.ghanaNumber || "";
+                
+                document.getElementById('cm-bank').value = d.cameroonBank || "";
+                document.getElementById('cm-num').value = d.cameroonNumber || "";
+                
+                document.getElementById('tg-link').value = d.telegramLink || "@Gifted34";
+                document.getElementById('wa-num').value = d.whatsappNum || "09068854115";
+            }
+        } catch (e) {
+            console.error("Firebase error:", e);
         }
     }
 
