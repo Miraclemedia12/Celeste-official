@@ -71,6 +71,10 @@
                         <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest ml-1">Account Number</label>
                         <input type="text" id="gh-num" class="w-full p-3 mt-1 rounded-xl text-sm" placeholder="055xxxxxxx">
                     </div>
+                    <div class="md:col-span-2">
+                        <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest ml-1">Account Name</label>
+                        <input type="text" id="gh-name" class="w-full p-3 mt-1 rounded-xl text-sm" placeholder="Account Name">
+                    </div>
                 </div>
             </div>
 
@@ -84,6 +88,10 @@
                     <div>
                         <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest ml-1">Phone Number</label>
                         <input type="text" id="cm-num" class="w-full p-3 mt-1 rounded-xl text-sm" placeholder="6xxxxxxxx">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest ml-1">Account Name</label>
+                        <input type="text" id="cm-name" class="w-full p-3 mt-1 rounded-xl text-sm" placeholder="Account Name">
                     </div>
                 </div>
             </div>
@@ -135,7 +143,6 @@
     window.handleLogin = () => {
         const u = document.getElementById('user').value;
         const p = document.getElementById('pass').value;
-        // Updated Password here
         if(u === "admin" && p === "Celesteoffical") {
             document.getElementById('login-card').classList.add('hidden');
             document.getElementById('dash-card').classList.remove('hidden');
@@ -157,9 +164,11 @@
                 
                 document.getElementById('gh-bank').value = d.ghanaBank || "";
                 document.getElementById('gh-num').value = d.ghanaNumber || "";
+                document.getElementById('gh-name').value = d.ghanaHolder || "";
                 
                 document.getElementById('cm-bank').value = d.cameroonBank || "";
                 document.getElementById('cm-num').value = d.cameroonNumber || "";
+                document.getElementById('cm-name').value = d.cameroonHolder || "";
                 
                 document.getElementById('tg-link').value = d.telegramLink || "@Gifted34";
                 document.getElementById('wa-num').value = d.whatsappNum || "09068854115";
@@ -183,8 +192,10 @@
                 nigeriaHolder: document.getElementById('ng-name').value,
                 ghanaBank: document.getElementById('gh-bank').value,
                 ghanaNumber: document.getElementById('gh-num').value,
+                ghanaHolder: document.getElementById('gh-name').value,
                 cameroonBank: document.getElementById('cm-bank').value,
                 cameroonNumber: document.getElementById('cm-num').value,
+                cameroonHolder: document.getElementById('cm-name').value,
                 telegramLink: document.getElementById('tg-link').value,
                 whatsappNum: document.getElementById('wa-num').value,
                 updatedAt: new Date().toISOString()
